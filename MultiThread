@@ -1,0 +1,77 @@
+#include <iostream>
+#include <fstream>
+#include <unordered_set>
+#include <vector>
+#include <algorithm>
+
+const int NUM_THREADS = 4; // number of threads as needed
+const char* FILE_PATH = "path/to/your/largefile.txt"; // Replace with the actual file path
+
+std::unordered_set<int> globalUniqueNumbers;
+std::vector<std::vector<int>> threadUniqueNumbers(NUM_THREADS);
+
+void processFileSection(int threadIndex, int startLine, int endLine) {
+    std::ifstream file(FILE_PATH);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file.\n";
+        return;
+    }
+
+    std::string line;
+    for (int i = 0; i < startLine; ++i) {
+        std::getline(file, line);
+    }
+
+    for (int i = startLine; i <= endLine && std::getline(file, line); ++i) {
+        std::istringstream iss(line);
+        int number;
+        while (iss >> number) {
+            threadUniqueNumbers[threadIndex].push_back(number);
+        }
+    }
+
+    file.close();
+}
+
+int main() {
+    std::ifstream file(FILE_PATH);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file.\n";
+        return 1;
+    }
+
+    int totalLines = 0;
+    std::string line;
+    while (std::getline(file, line)) {
+        ++totalLines;
+    }
+
+    file.close();
+
+    int linesPerThread = totalLines / NUM_THREADS;
+    std::vector<std::thread> threads;
+
+    for (int i = 0; i < NUM_THREADS; ++i) {
+        int startLine = i * linesPerThread;
+        int endLine = (i == NUM_THREADS - 1) ? totalLines - 1 : startLine + linesPerThread - 1;
+        threads.emplace_back(processFileSection, i, startLine, endLine);
+    }
+
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    // Combine results from all threads to the global set
+    for (const auto& numbers : threadUniqueNumbers) {
+        globalUniqueNumbers.insert(numbers.begin(), numbers.end());
+    }
+
+    // Print the global list of unique numbers
+    std::cout << "Global Unique Numbers: ";
+    for (int number : globalUniqueNumbers) {
+        std::cout << number << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
