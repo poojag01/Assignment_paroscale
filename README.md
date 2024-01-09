@@ -27,3 +27,11 @@ The display method is called after each operation to show the contents of the ca
 Memory Management: Memory for nodes is dynamically allocated using new.
 Memory is freed using delete in the freeCache method to prevent memory leaks.
 This solution demonstrates a basic implementation of an LRU cache with timestamp and filepath attributes in C++. It uses a doubly linked list to maintain the order of nodes and a hash map for efficient lookups based on file paths. The searchCache method updates the timestamp and moves the accessed node to the front of the list to implement the LRU policy.
+
+
+
+
+
+# 2
+
+This approach where each thread is assigned a specific section of the file, and the unique numbers within that section are collected in a thread-specific vector. A global set ensures that unique numbers are aggregated across all threads, avoiding duplicates. The solution utilizes standard C++ features, such as file handling, vectors, sets, and basic threading. The number of threads is configurable, and the program concludes by printing the global list of unique numbers obtained from the entire file. Exception handling is minimal for brevity, and users are advised to replace the placeholder file path with the actual path to their large file.
